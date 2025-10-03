@@ -1,7 +1,21 @@
 plugins {
-	id 'fabric-loom' version '1.0-SNAPSHOT'
-	id 'maven-publish'
-	id "io.freefair.lombok" version "6.0.0-m2"
+    id 'fabric-loom' version '1.9.+' // loom 1.9.x
+    id 'java'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(Integer.parseInt(project.findProperty('javaVersion') ?: '21'))
+    }
+}
+
+minecraft {
+    // cible Minecraft 1.21.4 et Fabric loader 0.16.9
+    version = project.findProperty('minecraftVersion') ?: '1.21.4'
+    loader = project.findProperty('fabricLoaderVersion') ?: '0.16.9'
+    // mappings : tu peux utiliser "official" (mojang) ou "yarn" si tu préfères les noms yarn
+    // pour la plupart des ports récents, "official" fonctionne ; si ton mod dépend beaucoup de noms yarn, utilise yarn-1.21.4+build.x
+    mappings = "official" // ou "yarn-1.21.4+build.1" si besoin
 }
 
 apply from: 'https://raw.githubusercontent.com/DarkKronicle/GradleScripts/main/gradle/publish.gradle'
@@ -19,40 +33,17 @@ if (file("extra.properties").exists()) {
 }
 
 repositories {
-	mavenCentral()
-	maven { url 'https://masa.dy.fi/maven' }
-    maven { url 'https://maven.terraformersmc.com/releases/' }
-	maven { url 'https://jitpack.io' }
+    // repos usuels
+    mavenCentral()
+    maven { url = "https://maven.fabricmc.net/" }
+    maven { url = "https://jitpack.io" }
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	modImplementation "fi.dy.masa.malilib:malilib-fabric-1.19.4:${project.malilib_version}"
-	modCompileOnly "com.terraformersmc:modmenu:5.0.1"
-
-	implementation "com.github.DarkKronicle.Konstruct:addons:${project.konstruct_version}"
-	implementation "com.github.DarkKronicle.Konstruct:core:${project.konstruct_version}"
-
-	implementation 'com.electronwill.night-config:toml:3.6.5'
-	// Transitive
-	include 'com.electronwill.night-config:toml:3.6.5'
-	include 'com.electronwill.night-config:core:3.6.5'
-
-
-	include "com.github.DarkKronicle.Konstruct:addons:${project.konstruct_version}"
-	include "com.github.DarkKronicle.Konstruct:core:${project.konstruct_version}"
-
-	implementation "org.mariuszgromada.math:MathParser.org-mXparser:${project.mxparser_version}"
-	include "org.mariuszgromada.math:MathParser.org-mXparser:${project.mxparser_version}"
-
-	implementation "io.github.maowimpl:owo:${project.owo_version}"
-	include "io.github.maowimpl:owo:${project.owo_version}"
-
-	implementation 'org.apache.commons:commons-csv:1.8'
-	include 'org.apache.commons:commons-csv:1.8'
+    // Fabric API compatible 1.21.4
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.findProperty('fabricApiVersion')}"
+    // conserve les autres dépendances d'origine (MaLiLib, etc.)
+    // exemple: modImplementation "com.some:library:version"
 
 }
 
@@ -79,10 +70,7 @@ jar {
 }
 
 tasks.register('downloadExtra') {
-	def f = new File('./src/main/resources/swear_words.csv')
-	if (!f.exists()) {
-		new URL('https://raw.githubusercontent.com/surge-ai/profanity/main/profanity_en.csv').withInputStream{ i -> f.withOutputStream{ it << i }}
-	}
+    options.release.set(Integer.parseInt(project.findProperty('javaVersion') ?: '21'))
 }
 
 assemble {
