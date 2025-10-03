@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.9.+' // loom 1.9.x
+    id 'fabric-loom' version '1.9-SNAPSHOT'
     id 'java'
 }
 
